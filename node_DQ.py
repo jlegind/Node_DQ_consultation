@@ -27,7 +27,8 @@ other_issues = [basisOFRecord, individualCount]
 
 def get_facets(node, api_url):
     """
-    Count the number of dataset or collections for which GBIF has occurrences of preserved specimens
+    Count the number of issues for one node
+    returns unprocessed response
     """
     base_request = api_url.format(node)
     print('Base request = ', base_request)
@@ -35,17 +36,23 @@ def get_facets(node, api_url):
     return response
 
 the_response = get_facets('DK', api_url='https://api.gbif.org/v1/occurrence/search?publishingCountry={}&limit=0&facet=issue&facetLimit=100')
+#Contains all issues and is reusable
 
 master_dict = {}
+#eventual dict going into the master dataframe
 def make_issues_dicts(particular_list, category, j_resp):
-    #issue = topical issue
-    #plist is taxon_issues and so...
+    #particular_list : topical issue
+    #category : title for the topic
+    #jresp is the output of unprocessed API response
     print('currrrr ', particular_list)
     current_dict = dict.fromkeys(particular_list, '')
+    #makes a dict from the list having no values
     print('current____dict', current_dict)
     resp = j_resp.json()
     counts = resp['facets'][0]['counts']
+    #JSON of interest
     print('COOOOUNTSS= ', counts)
+    #below loops to see which issues fit with the particular list key
     for j in counts:
         for k in particular_list:
             if j['name'] == k:
@@ -54,7 +61,9 @@ def make_issues_dicts(particular_list, category, j_resp):
                 print('MATCH ', j['name'], k, j['count'])
                 current_dict[k] = cnt
     first_dict = {category:'format me'}
+    #conditonal formatting marker
     new_dict = {**first_dict, **current_dict}
+    #appending dicts
     print('final == ', new_dict)
     master_dict.update(new_dict)
     return new_dict
@@ -71,21 +80,21 @@ r3 = make_issues_dicts(temporal_issues, 'temporal issues', the_response)
 df3 = pandas.DataFrame.from_dict(master_dict, orient='index')
 print(tabulate(df3, headers='keys', tablefmt='psql'))
 
-name = 'DQ_nodes10.xlsx'
+name = 'DQ_nodes120.xlsx'
 writer = pandas.ExcelWriter(name, engine='xlsxwriter')
 
 df3.to_excel(writer, sheet_name='sheet1', startrow=2, header=False)
 workbook = writer.book
 worksheet = writer.sheets['sheet1']
-worksheet.merge_range('A1:E1', 'Checklist for Nodes Data Quality Service | Node title: DK')
+merge_format = workbook.add_format({'bold': True})
+worksheet.merge_range('A1:E1', 'Checklist for Nodes Data Quality Service // Node title: DK', merge_format)
 #--
 number_rows = len(df3.index) + 1
 
 
 
 
-format1 = workbook.add_format({'bg_color': '#FFC7CE',
-                              'font_color': '#9C0006'})
+format1 = workbook.add_format({'bg_color': '#111111','font_color': '#999999','underline':True})
 
 worksheet.conditional_format("$A$1:$B$%d" % (number_rows),
                              {"type": "formula",
@@ -95,8 +104,8 @@ worksheet.conditional_format("$A$1:$B$%d" % (number_rows),
 )
 # workbook.close()
 #--
-fontfmt = workbook.add_format({'font_name': 'Arial', 'font_size': 16})
-worksheet.set_row(0, None, fontfmt)
+# fontfmt = workbook.add_format({'font_name': 'Arial', 'font_size': 16})
+# worksheet.set_row(0, None, fontfmt)
 worksheet.set_column(0,4,26)
 writer.save()
 # maybeees v v
