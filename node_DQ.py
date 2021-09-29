@@ -87,10 +87,11 @@ def make_issues_dicts(topical_list, category, j_resp, node):
     master_dict.update(new_dict)
     return new_dict
 
-# taxonomic section
+#initiation of script
 master_node = 'US'
 jayson = get_facets(master_node, 'https://api.gbif.org/v1/occurrence/search?publishingCountry={}&limit=0&facet=issue&facetLimit=100')
-# master_dict = jayson
+
+# taxonomic section
 rr = make_issues_dicts(taxon_issues, 'Taxon issues', jayson, node=master_node)
 # print(master_dict)
 df = pandas.DataFrame.from_dict(master_dict, orient='index')
