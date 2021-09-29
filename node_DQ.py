@@ -15,6 +15,7 @@ zeroCoordinate = 'ZERO_COORDINATE'
 countryCoordinateMismatch = 'COUNTRY_COORDINATE_MISMATCH'
 recordedDateInvalid = 'RECORDED_DATE_INVALID'
 recordedDateUnlikely = 'RECORDED_DATE_UNLIKELY'
+coordinateInvalid = 'COORDINATE_INVALID'
 coordinateOutOfRange = 'COORDINATE_OUT_OF_RANGE'
 countryInvalid = 'COUNTRY_INVALID'
 wktFootprintInvalid = 'FOOTPRINT_WKT_INVALID'
@@ -23,7 +24,7 @@ individualCount = 'INDIVIDUAL_COUNT_INVALID'
 #---------------Topical categories lists
 issues_list = [taxonMatchNone, taxonMatchHigherrank, zeroCoordinate, countryCoordinateMismatch, countryInvalid, coordinateOutOfRange, recordedDateInvalid, recordedDateUnlikely, wktFootprintInvalid, basisOFRecord, individualCount]
 taxon_issues = [taxonMatchNone, taxonMatchHigherrank]
-geospatial_issues = [zeroCoordinate, countryCoordinateMismatch, countryInvalid, coordinateOutOfRange, wktFootprintInvalid]
+geospatial_issues = [zeroCoordinate,coordinateInvalid, countryCoordinateMismatch, countryInvalid, coordinateOutOfRange, wktFootprintInvalid]
 temporal_issues = [recordedDateInvalid, recordedDateUnlikely]
 other_issues = [basisOFRecord, individualCount]
 #-------------------------------------------------------------------------
@@ -38,8 +39,6 @@ def get_facets(node, api_url):
     response = requests.get(base_request)
     return response
 
-# master_response = None
-# #Contains all issues and is a reusable constant ^
 
 def get_node_count(node):
     # A simple function to get the 'publishing node published records count'
@@ -51,7 +50,7 @@ def get_node_count(node):
     return record_count
 
 master_dict = {}
-node_name = ''
+
 #eventual dict going into the master dataframe
 
 def make_issues_dicts(topical_list, category, j_resp, node):
@@ -89,29 +88,31 @@ def make_issues_dicts(topical_list, category, j_resp, node):
     return new_dict
 
 # taxonomic section
-jayson = get_facets('US', 'https://api.gbif.org/v1/occurrence/search?publishingCountry={}&limit=0&facet=issue&facetLimit=100')
-rr = make_issues_dicts(taxon_issues, 'Taxon issues', jayson, node='US')
-print(master_dict)
+master_node = 'US'
+jayson = get_facets(master_node, 'https://api.gbif.org/v1/occurrence/search?publishingCountry={}&limit=0&facet=issue&facetLimit=100')
+# master_dict = jayson
+rr = make_issues_dicts(taxon_issues, 'Taxon issues', jayson, node=master_node)
+# print(master_dict)
 df = pandas.DataFrame.from_dict(master_dict, orient='index')
 print(df.to_string)
 print(tabulate(df, headers='keys', tablefmt='psql'))
 #
 # geospatial section
-r2 = make_issues_dicts(geospatial_issues, 'Geospatial issues', jayson, node='US')
+r2 = make_issues_dicts(geospatial_issues, 'Geospatial issues', jayson, node=master_node)
 df2 = pandas.DataFrame.from_dict(master_dict, orient='index')
 print(tabulate(df2, headers='keys', tablefmt='psql'))
 # temporal section
-r3 = make_issues_dicts(temporal_issues, 'Temporal issues', jayson, node='US')
+r3 = make_issues_dicts(temporal_issues, 'Temporal issues', jayson, node=master_node)
 df3 = pandas.DataFrame.from_dict(master_dict, orient='index')
 print(tabulate(df3, headers='keys', tablefmt='psql'))
 # other issues section
-r4 = make_issues_dicts(other_issues, 'Other issues', jayson, node='US')
+r4 = make_issues_dicts(other_issues, 'Other issues', jayson, node=master_node)
 df4 = pandas.DataFrame.from_dict(master_dict, orient='index')
 print(tabulate(df4, headers='keys', tablefmt='psql'))
-#All these sections could usefully be rolled into one function
+#All these sections could master_nodeefully be rolled into one function
 
 # output file name -v
-name = 'US_DQ_nodes_checklist6.xlsx'
+name = 'master_node_DQ_nodes_checklist9.xlsx'
 
 #Excel formatting below
 writer = pandas.ExcelWriter(name, engine='xlsxwriter')
@@ -121,7 +122,7 @@ df4.to_excel(writer, sheet_name='sheet1', startrow=2, header=False)
 workbook = writer.book
 worksheet = writer.sheets['sheet1']
 merge_format = workbook.add_format({'bold': True})
-worksheet.merge_range('A1:E1', 'Checklist for Nodes Data Quality Service // Node title: {}'.format('US'), merge_format)
+worksheet.merge_range('A1:E1', 'Checklist for Nodes Data Quality Service // Node title: {}'.format(master_node), merge_format)
 #adding the title
 
 number_rows = len(df4.index) + 1
