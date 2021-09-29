@@ -9,3 +9,5 @@ The line:
 
 These lines are enough to get the ball rolling. If other issues are of interest they can be added to the enumerations and topical categories.  
 This excel file is an example of the output for the US node: https://github.com/jlegind/Node_DQ_consultation/blob/master/US_node_DQ_nodes_checklist.xlsx
+
+![sample image](https://github.com/jlegind/Node_DQ_consultation/blob/master/sample_xlsx_file.png)Format: ![Alt Text](url)
