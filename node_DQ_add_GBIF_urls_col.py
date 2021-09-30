@@ -123,7 +123,7 @@ df_urls = pandas.DataFrame.from_dict(url_dict, orient='index')
 df_list = [df4, df_urls]
 
 final_df = pandas.concat(df_list, axis=1)
-final_df.iloc[[2], [1]] = 'GBIF.org issue'
+final_df.iloc[[2], [1]] = 'GBIF.org issue link'
 #insert section header ^
 print('FINAL DF::::', tabulate(final_df, tablefmt='psql', headers='keys'))
 
